@@ -8,3 +8,71 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+```{r}
+set.seed(123) # Set random number generation
+
+m <- lm(mpg ~ hp + cyl + drat, mtcars)
+
+l <- list(a = list(m = matrix(1:12, ncol = 3),
+              	   v = 1:7),
+          b = data.frame(student = 1:15,
+                         score = rnorm(15, 100, 10)))
+```
+
+1. From the model results: Extract the qr tolerance (tol). Extract the term labels from the model.
+
+```{r}
+# From the model results: Extract the qr tolerance (tol).
+qr(m)$tol
+
+# Extract the term labels from the model.
+model <- attributes(m$model)
+terms <- attributes(model$terms)
+terms$term.labels
+```
+
+2. From the list
+
+```{r}
+str(l)
+```
+
++ at least two different methods to extract m.
+
+```{r}
+l$a$m
+
+l[[1]][[1]]
+```
+
++ Extract the third column of m. Maintain the dimensions (matrix structure).
+
+```{r}
+l$a$m[,3, drop = FALSE]
+```
+
++ Extract the score for student 7.
+
+```{r}
+
+```
+
+3. Use the “airquality” dataset, which is part of base R. Split it by `Month`
+
+```{r}
+by_month <- split(airquality, airquality$Month)
+
+str(by_month)
+```
+
+4. Use a for loop to calculate the mean Ozone by month (remember to remove missing data from the calculation)
+
+```{r}
+mean_ozone <- rep(NA, length(by_month))
+
+for (i in seq_along(by_month)) {
+  mean_ozone[i] <- mean(by_month[[i]]$Ozone, na.rm = TRUE)
+}
+
+mean_ozone
+```
