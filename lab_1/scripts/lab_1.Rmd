@@ -1,0 +1,10 @@
+---
+title: "Functional programming Lab 1"
+author: "Meghan Siritzky, Lea Frank, Wanjia Guo, and Sarah Dimakis"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
