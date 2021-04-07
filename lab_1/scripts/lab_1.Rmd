@@ -19,6 +19,17 @@ l <- list(a = list(m = matrix(1:12, ncol = 3),
                          score = rnorm(15, 100, 10)))
 ```
 
+1. From the model results: Extract the qr tolerance (tol). Extract the term labels from the model.
+
+```{r}
+# From the model results: Extract the qr tolerance (tol).
+qr(m)$tol
+
+# Extract the term labels from the model.
+model <- attributes(m$model)
+terms <- attributes(model$terms)
+terms$term.labels
+```
 
 2. From the list
 
@@ -45,10 +56,6 @@ l$a$m[,3, drop = FALSE]
 ```{r}
 
 ```
-
-
-
-
 
 3. Use the “airquality” dataset, which is part of base R. Split it by `Month`
 
