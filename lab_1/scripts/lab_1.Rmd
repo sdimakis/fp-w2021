@@ -54,7 +54,8 @@ l$a$m[,3, drop = FALSE]
 + Extract the score for student 7.
 
 ```{r}
-
+str(l)
+l$b$score[7]
 ```
 
 3. Use the “airquality” dataset, which is part of base R. Split it by `Month`
