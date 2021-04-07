@@ -8,3 +8,22 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+3. Use the “airquality” dataset, which is part of base R. Split it by `Month`
+
+```{r}
+by_month <- split(airquality, airquality$Month)
+
+str(by_month)
+```
+
+4. Use a for loop to calculate the mean Ozone by month (remember to remove missing data from the calculation)
+
+```{r}
+mean_ozone <- rep(NA, length(by_month))
+
+for (i in seq_along(by_month)) {
+  mean_ozone[i] <- mean(by_month[[i]]$Ozone, na.rm = TRUE)
+}
+
+mean_ozone
+```
