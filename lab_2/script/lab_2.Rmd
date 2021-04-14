@@ -1,0 +1,45 @@
+---
+title: "Functional programming Lab 2"
+author: "Meghan Siritzky, Lea Frank, Wanjia Guo, and Sarah Dimakis"
+output: 
+  html_document: 
+    toc: yes
+    toc_float: yes
+    theme: yeti
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+
+```
+
+# Part A: Multiple Models
+
+```{r}
+
+
+```
+
+# Part B: Star Wars
+
+```{r}
+
+
+```
+
+# Part C: Some basic API calls
+
+
+```{r}
+
+
+```
+
+# Bonus
+
+```{r}
+
+
+```
+
