@@ -11,7 +11,7 @@ editor_options:
 ---
 
 ```{r setup, include=FALSE}
-
+library(tidyverse)
 ```
 
 # Part A: Multiple Models
@@ -32,8 +32,17 @@ editor_options:
 
 
 ```{r}
+library(httr)
 
+# starting with vector of 1:5
+abilities <- c(1:5)
 
+# generating paths to the API's
+(abilities <- map(abilities, ~{str_c("https://pokeapi.co/api/v2/ability/", .x)}) %>% 
+  map(~{GET(.x) %>% content("parsed")}) %>% 
+  map_dfr(~{
+    tibble(ability = .x$name, num_pokemon = length(.x$pokemon))
+  }))
 ```
 
 # Bonus
