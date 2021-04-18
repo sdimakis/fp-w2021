@@ -23,10 +23,50 @@ library(tidyverse)
 
 # Part B: Star Wars
 
+```{r, warning = FALSE, message= FALSE}
+library(repurrrsive)
+library(tidyverse)
+library(kableExtra)
+```
+
 ```{r}
 
+characters <- map_dbl(sw_films, ~length(.x[["characters"]])) #extract number of characters
+
+titles <- map_chr(sw_films, ~.x[["title"]]) #extract titles
+
+tibble(Title = titles,
+    `Number of characters` = characters) %>% 
+  kbl(caption = "The number of characters in each film.") %>% 
+  kable_styling(bootstrap_options = c("striped", "hover"), full_width = FALSE, position = "left")
 
 ```
+
+
+```{r}
+hair_colors<- map_chr(sw_species, ~.x[["hair_colors"]]) #extract hair colors
+
+names <- map_chr(sw_species, ~.x[["name"]]) #extract names
+
+hair_colors_table <- tibble(Name = names,
+    `Hair color` = hair_colors) %>% 
+  filter(!`Hair color` %in% c("unknown", "n/a"))
+
+hair_colors_table %>% kbl(caption = "All of the species that have known hair colors, including species that are hairless (none).") %>% 
+  kable_styling(bootstrap_options = c("striped", "hover"), full_width = FALSE) %>% 
+    scroll_box(width = "350px", height = "400px")
+
+```
+
+<br>
+
+```{r}
+hair_colors_table["Hair color"] %>% unique() %>% 
+  kbl(caption = "All of the hair colors.") %>% 
+  kable_styling(bootstrap_options = c("striped", "hover"), full_width = FALSE, position = "left")
+
+```
+
 
 # Part C: Some basic API calls
 
