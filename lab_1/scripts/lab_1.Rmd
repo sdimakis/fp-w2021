@@ -1,10 +1,136 @@
 ---
 title: "Functional programming Lab 1"
 author: "Meghan Siritzky, Lea Frank, Wanjia Guo, and Sarah Dimakis"
-output: html_document
+output: 
+  html_document: 
+    toc: yes
+    toc_float: yes
+    theme: yeti
+editor_options: 
+  chunk_output_type: console
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
+
+```{r}
+set.seed(123) # Set random number generation
+
+m <- lm(mpg ~ hp + cyl + drat, mtcars)
+
+l <- list(a = list(m = matrix(1:12, ncol = 3),
+              	   v = 1:7),
+          b = data.frame(student = 1:15,
+                         score = rnorm(15, 100, 10)))
+```
+
+# 1. From the model results 
+
+Extract the qr tolerance (tol).
+
+```{r}
+qr(m)$tol
+```
+
+Extract the qr tolerance (tol).
+
+```{r}
+model <- attributes(m$model)
+terms <- attributes(model$terms)
+terms$term.labels
+```
+
+# 2. From the list results
+
+```{r}
+str(l)
+```
+
+Use at least two different methods to extract m.
+
+```{r}
+l$a$m
+
+l[[1]][[1]]
+```
+
+Extract the third column of m. Maintain the dimensions (matrix structure).
+
+```{r}
+l$a$m[,3, drop = FALSE]
+```
+
+Extract the score for student 7.
+
+```{r}
+str(l)
+l$b$score[7]
+```
+
+# 3. Use the “airquality” dataset, which is part of base R. Split it by `Month`
+
+```{r}
+by_month <- split(airquality, airquality$Month)
+
+str(by_month)
+```
+
+# 4. Use a for loop to calculate the mean Ozone by month (remember to remove missing data from the calculation)
+
+```{r}
+mean_ozone <- rep(NA, length(by_month))
+
+for (i in seq_along(by_month)) {
+  mean_ozone[i] <- mean(by_month[[i]]$Ozone, na.rm = TRUE)
+}
+
+mean_ozone
+```
+
+# 5. Replicate this calculation with lapply, sapply, and vapply
+
+```{r}
+mean_ozone1 <- lapply(mean_ozone, mean, na.rm = TRUE)
+mean_ozone1
+
+mean_ozone2 <- sapply(mean_ozone, mean, na.rm = TRUE)
+mean_ozone2
+
+mean_ozone3 <- vapply(mean_ozone, mean, FUN.VALUE = double(1))
+mean_ozone3
+```
+
+# 6. Produce separate plots showing the relation between Ozone and Solar.R for each month
+
+```{r, warning = FALSE, message = FALSE}
+library(ggplot2)
+
+(plots <- lapply(by_month, function(x) {
+  ggplot(x, aes(Ozone, Solar.R)) +
+  geom_point(color = "gray40") +
+  geom_smooth(method = "lm", color = "red") +
+  theme_minimal()}))
+
+```
+
+# 7. Use a for loop to save the plots to a folder on your computer
+
+```{r}
+filenames <- here::here("lab_1", "images", 
+                        paste0("month", names(by_month), ".png"))
+filenames
+
+```
+
+```{r, eval = FALSE}
+for(i in seq_along(plots)) {
+    ggsave(filenames[i], 
+           plots[[i]], 
+           device = "png",
+           width = 7, 
+           height = 5)
+}
+```
+
 
