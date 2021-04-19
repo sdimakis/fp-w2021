@@ -17,7 +17,35 @@ library(tidyverse)
 # Part A: Multiple Models
 
 ```{r}
+file <- "https://github.com/datalorax/esvis/raw/master/data/benchmarks.rda"
+load(url(file))
+head(benchmarks)
 
+benchmarks <- benchmarks %>%
+	as_tibble() %>%
+	mutate(wave = case_when(season == "Fall" ~ 0,
+	                        season == "Winter" ~ 1,
+	                        TRUE ~ 2))
+
+# Fit a model of the form lm(math ~ wave) for each student.
+by_student <- split(benchmarks, benchmarks$sid)
+math_mods <- map(by_student, ~lm(math ~ wave, data = .x))
+
+# Plot the distribution of slopes. Annotate the plot with a vertical line for the mean.
+coefs <- map(math_mods, coef)
+coefs[c(1:2, length(coefs))]
+
+slopes <- map_dbl(coefs, 2)
+
+sdist <- tibble(sid = names(slopes),
+                   slope = slopes)
+slope_mean <- mean(sdist$slope, na.rm=TRUE)
+
+ggplot(sdist, aes(slope)) +
+    geom_histogram(fill = "lightblue",
+                   color = "white",
+                   bins = 30) +
+  geom_vline(xintercept = slope_mean)
 
 ```
 
