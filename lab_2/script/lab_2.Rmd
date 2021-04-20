@@ -12,6 +12,8 @@ editor_options:
 
 ```{r setup, include=FALSE}
 library(tidyverse)
+library(repurrrsive)
+library(kableExtra)
 ```
 
 # Part A: Multiple Models
@@ -28,12 +30,15 @@ benchmarks <- benchmarks %>%
 	                        TRUE ~ 2))
 
 # Fit a model of the form lm(math ~ wave) for each student.
-by_student <- split(benchmarks, benchmarks$sid)
+by_student <- benchmarks %>% 
+  group_by(sid) %>%
+  filter(n() >= 3) %>% # excluding students with only 1 or 2 datapoint from regression.
+  split(., .$sid)
 math_mods <- map(by_student, ~lm(math ~ wave, data = .x))
 
 # Plot the distribution of slopes. Annotate the plot with a vertical line for the mean.
 coefs <- map(math_mods, coef)
-coefs[c(1:2, length(coefs))]
+#coefs[c(1:2, length(coefs))]
 
 slopes <- map_dbl(coefs, 2)
 
@@ -50,12 +55,6 @@ ggplot(sdist, aes(slope)) +
 ```
 
 # Part B: Star Wars
-
-```{r, warning = FALSE, message= FALSE}
-library(repurrrsive)
-library(tidyverse)
-library(kableExtra)
-```
 
 ```{r}
 
@@ -106,17 +105,38 @@ library(httr)
 abilities <- c(1:5)
 
 # generating paths to the API's
-(abilities <- map(abilities, ~{str_c("https://pokeapi.co/api/v2/ability/", .x)}) %>% 
-  map(~{GET(.x) %>% content("parsed")}) %>% 
+pokemon_df = map(abilities, ~{str_c("https://pokeapi.co/api/v2/ability/", .x)}) %>% 
+  map(~{GET(.x) %>% content("parsed")})
+
+abilities <-  pokemon_df %>% 
   map_dfr(~{
     tibble(ability = .x$name, num_pokemon = length(.x$pokemon))
-  }))
+  })
+
+abilities %>% 
+  kbl(caption = "First five abilities and the number of pokemon with that ability.") %>% 
+  kable_styling(bootstrap_options = c("striped", "hover"), 
+                full_width = FALSE, 
+                position = "left")
 ```
 
 # Bonus
 
 ```{r}
 
+pokemon = pokemon_df %>% 
+  map_dfr(~{
+    tibble(ability = .x$name, 
+           pokemon = .x$pokemon %>% 
+             map_chr(~.x[['pokemon']][['name']]))
+  })
+  
+pokemon[,2] %>% 
+  kbl(caption = "First five abilities and the pokemon with that ability.") %>% 
+  pack_rows(index = table(fct_inorder(pokemon$ability))) %>% 
+  kable_styling(bootstrap_options = c("striped", "hover"), 
+                full_width = FALSE, position = "left") %>% 
+  scroll_box(width = "250px", height = "400px")
 
 ```
 
