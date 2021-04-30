@@ -1,0 +1,65 @@
+---
+title: "Functional programming Midterm"
+author: "Meg Siritzky, Lea Frank, Wanjia Guo, and Sarah Dimakis"
+output: 
+  html_document: 
+    toc: yes
+    toc_float: yes
+    theme: yeti
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(cache = TRUE)
+
+library(tidyverse)
+library(repurrrsive)
+library(kableExtra)
+library(rio)
+library(glue)
+library(dplyr)
+```
+
+# Part A (1) 
+
+```{r}
+download_file <- function(year) {
+  link <- glue::glue("https://www.oregon.gov/ode/educator-resources/assessment/TestResults20{year}/pagr_schools_ela_raceethnicity_{year-1}{year}.xlsx")
+  rio::import(link, setclass = "tibble", na = c("-", "--", "*"))
+}
+
+school_raw <- map_dfr(15:18, download_file)
+```
+
+```{r}
+school_clean <- school_raw %>% 
+  janitor::clean_names() %>% 
+  filter(student_group == "White" |
+           student_group == "Hispanic/Latino") %>% 
+  pivot_longer(cols = c(number_level_1, number_level_2, number_level_3, number_level_4), names_to = "level", values_to = "n") %>% 
+  mutate(level = recode(level, number_level_1 = "1"),
+         level = recode(level, number_level_2 = "2"),
+         level = recode(level, number_level_3 = "3"),
+         level = recode(level, number_level_4 = "4")) %>% 
+  dplyr::select(academic_year, district, school, student_group, grade_level, level, n) %>% 
+  drop_na(n)
+```
+
+# Part A (2)
+
+```{r}
+school <- school_clean %>% 
+  group_by(district) %>%
+  mutate(n_schools = length(unique(school))) %>% 
+  group_by(academic_year, district, level, student_group, n_schools) %>%
+  summarize(n = sum(n)) %>% 
+  pivot_wider(names_from = student_group, values_from = n) %>% 
+  janitor::clean_names() %>% 
+  drop_na(hispanic_latino, white) %>% 
+  arrange(district) 
+
+```
+
+
+
