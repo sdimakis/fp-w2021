@@ -19,6 +19,8 @@ library(kableExtra)
 library(rio)
 library(glue)
 library(dplyr)
+#remotes::install_github("datalorax/gapr")
+library(gapr)
 ```
 
 # Part A (1) 
@@ -63,10 +65,7 @@ school <- school_clean %>%
 
 # Part B (1)
 
-```{r}
-#remotes::install_github("datalorax/gapr")
-library(gapr)
-
+```{r warning=FALSE}
 school_map <- school %>% 
   group_by(district) %>% 
   nest() %>% 
@@ -104,7 +103,7 @@ school_plot %>%
 # Part B (3)
 
 ```{r}
-dists <- unique(school$district)[1:100]
+dists <- unique(school$district)[1:10]
 
 school_nestby = school %>% 
   ungroup() %>% 
@@ -124,7 +123,7 @@ school_nestby = school %>%
              district,
              " (SD.+)", 
              " School District"),
-    plot = list(
+    nestby_plot = list(
   ggplot(data, 
          aes(academic_year, mean)) + 
     geom_hline(yintercept = 0, color = 'red') +
@@ -147,7 +146,7 @@ school_nestby = school %>%
           plot.subtitle = ggtext::element_markdown())
 ))
   
-school_nestby$plot[8]
+school_nestby$nestby_plot[8]
 
 ```
 
@@ -169,7 +168,7 @@ school_nest = school %>%
              " School District")) %>% 
   group_by(district_name, n_schools) %>% 
   nest() %>% 
-  mutate(plot = pmap(list(data,
+  mutate(nest_plot = pmap(list(data,
                           district_name,
                           n_schools),
                      ~{
@@ -194,6 +193,24 @@ school_nest = school %>%
           plot.subtitle = ggtext::element_markdown())
   }))
   
-school_nest$plot[8]
+school_nest$nest_plot[8]
 
+```
+
+# Part B (3): Extra Credit
+
+```{r warning = FALSE, fig.height = 4, fig.width = 15}
+school_combine = inner_join(school_nest %>% select(-data), 
+           school_nestby %>% select(-c(district, data))) %>% 
+  rowwise() %>% 
+  mutate(
+  combine_plot = list(cowplot::plot_grid(nestby_plot, 
+                                         nest_plot, 
+                                         labels = c('Nestby', 'Nest'),
+                                         label_x = 0, 
+                                         label_y = 0,
+                                         hjust = -0.5, 
+                                         vjust = -0.5)))
+
+school_combine$combine_plot[8]
 ```
