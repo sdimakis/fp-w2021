@@ -61,5 +61,43 @@ school <- school_clean %>%
 
 ```
 
+# Part B (1)
 
+```{r}
+#remotes::install_github("datalorax/gapr")
+library(gapr)
+
+school_map <- school %>% 
+  group_by(district) %>% 
+  nest() %>% 
+  mutate(estv_map = map(data, ~estimate_v(data = .x, "white", "hispanic_latino")))
+
+school_row <- school %>% 
+  ungroup() %>% 
+  nest_by(district) %>% 
+  summarize(estv_row = list(estimate_v(data, "white", "hispanic_latino")))
+
+school <- left_join(school_map, school_row)
+```
+
+# Part B (2)
+
+```{r}
+# not all models, unsure why
+# filtered out those models to compare estimates
+school <- school %>% 
+  mutate(isnull_map = map_lgl(estv_map, ~ nrow(.x)==0),
+         isnull_row = map_lgl(estv_row, ~ nrow(.x)==0)) %>% 
+  filter(!isnull_map | !isnull_row) %>% 
+  mutate(v_map = map_dbl(estv_map, "v"),
+         v_row = map_dbl(estv_row, "v"))
+
+school %>% 
+  ggplot(aes(x = v_map, y = v_row)) + 
+  geom_point(alpha = .5) +
+  geom_line(color = "cadetblue") +
+  labs(x = "Estimates from Purrr Method", 
+       y = "Estimates from Rowwise Method") +
+  theme_minimal()
+```
 
