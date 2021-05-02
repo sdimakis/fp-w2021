@@ -77,7 +77,7 @@ school_row <- school %>%
   nest_by(district) %>% 
   summarize(estv_row = list(estimate_v(data, "white", "hispanic_latino")))
 
-school <- left_join(school_map, school_row)
+school_plot <- left_join(school_map, school_row)
 ```
 
 # Part B (2)
@@ -85,14 +85,14 @@ school <- left_join(school_map, school_row)
 ```{r}
 # not all models, unsure why
 # filtered out those models to compare estimates
-school <- school %>% 
+school_plot <- school_plot %>% 
   mutate(isnull_map = map_lgl(estv_map, ~ nrow(.x)==0),
          isnull_row = map_lgl(estv_row, ~ nrow(.x)==0)) %>% 
   filter(!isnull_map | !isnull_row) %>% 
   mutate(v_map = map_dbl(estv_map, "v"),
          v_row = map_dbl(estv_row, "v"))
 
-school %>% 
+school_plot %>% 
   ggplot(aes(x = v_map, y = v_row)) + 
   geom_point(alpha = .5) +
   geom_line(color = "cadetblue") +
@@ -101,3 +101,99 @@ school %>%
   theme_minimal()
 ```
 
+# Part B (3)
+
+```{r}
+dists <- unique(school$district)[1:100]
+
+school_nestby = school %>% 
+  ungroup() %>% 
+  filter(district %in% dists) %>% 
+  mutate(academic_year = factor(academic_year)) %>% 
+  nest_by(academic_year, district, n_schools) %>% 
+  mutate(estv_map = list(estimate_v(data, "white", "hispanic_latino")),
+         mean = list(estv_map$v[1]) %>% as.numeric(),
+         se = list(estv_map$v_se[1]) %>% as.numeric(),
+         ci = list(se * 1.96) %>% as.numeric(),
+         pos_neg = list(mean >= 0) %>% as.factor()) %>% 
+  select(-c(data, estv_map)) %>%
+  ungroup() %>% 
+  nest_by(district, n_schools) %>% 
+  mutate(
+    district_name = str_replace_all(
+             district,
+             " (SD.+)", 
+             " School District"),
+    plot = list(
+  ggplot(data, 
+         aes(academic_year, mean)) + 
+    geom_hline(yintercept = 0, color = 'red') +
+    geom_line(aes(group = 1)) +
+    geom_errorbar(aes(ymin = mean-ci, ymax = mean+ci), width = 0.2) +
+    geom_point(aes(color = pos_neg), size=2) + 
+    theme_minimal() + 
+    scale_color_brewer(palette="Accent") +
+    labs(x = 'School year',
+         y = 'Average achievement difference (SD units)',
+         title = glue('Achievement Gap Estimates: {district_name}'),
+         subtitle = "Negative values indicate 
+         <span style = 'color: #55B190'>**White**</span> 
+         students have higher average achievement<br>
+         Positive values indicate
+         <span style = 'color: #887E96'>**Hispanic/Latino**</span> 
+          students have higher average achievement",
+         caption = glue('Note: District included {n_schools} schools.')) +
+    theme(legend.position = 'none',
+          plot.subtitle = ggtext::element_markdown())
+))
+  
+school_nestby$plot[8]
+
+```
+
+```{r}
+
+school_nest = school %>% 
+  ungroup() %>% 
+  filter(district %in% dists) %>% 
+  group_by(academic_year, district, n_schools) %>% 
+  nest() %>% 
+  mutate(estv_map = map(data,estimate_v, "white", "hispanic_latino")) %>% 
+  unnest(estv_map) %>% 
+  select(-data) %>% 
+  mutate(pos_neg = (v >= 0),
+         ci = v_se * 1.96,
+         district_name = str_replace_all(
+             district,
+             " (SD.+)", 
+             " School District")) %>% 
+  group_by(district_name, n_schools) %>% 
+  nest() %>% 
+  mutate(plot = pmap(list(data,
+                          district_name,
+                          n_schools),
+                     ~{
+      ggplot(..1, aes(academic_year, v)) + 
+    geom_hline(yintercept = 0, color = 'red') +
+    geom_line(aes(group = 1)) +
+    geom_errorbar(aes(ymin = v-ci, ymax = v+ci), width = 0.2) +
+    geom_point(aes(color = pos_neg), size=2) + 
+    theme_minimal() + 
+    scale_color_brewer(palette="Accent") +
+    labs(x = 'School year',
+         y = 'Average achievement difference (SD units)',
+         title = glue('Achievement Gap Estimates: {..2}'),
+         subtitle = "Negative values indicate 
+         <span style = 'color: #55B190'>**White**</span> 
+         students have higher average achievement<br>
+         Positive values indicate
+         <span style = 'color: #887E96'>**Hispanic/Latino**</span> 
+          students have higher average achievement",
+         caption = glue('Note: District included {..3} schools.')) +
+    theme(legend.position = 'none',
+          plot.subtitle = ggtext::element_markdown())
+  }))
+  
+school_nest$plot[8]
+
+```
