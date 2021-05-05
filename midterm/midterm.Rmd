@@ -5,10 +5,12 @@ output:
   html_document: 
     toc: yes
     toc_float: yes
-    theme: yeti
+    theme: flatly
 editor_options: 
   chunk_output_type: console
 ---
+
+
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(cache = TRUE)
@@ -23,8 +25,9 @@ library(dplyr)
 library(gapr)
 ```
 
-# Part A (1) 
+# Part A
 
+## #1
 ```{r}
 download_file <- function(year) {
   link <- glue::glue("https://www.oregon.gov/ode/educator-resources/assessment/TestResults20{year}/pagr_schools_ela_raceethnicity_{year-1}{year}.xlsx")
@@ -39,18 +42,21 @@ school_clean <- school_raw %>%
   janitor::clean_names() %>% 
   filter(student_group == "White" |
            student_group == "Hispanic/Latino") %>% 
-  pivot_longer(cols = c(number_level_1, number_level_2, number_level_3, number_level_4), names_to = "level", values_to = "n") %>% 
-  mutate(level = recode(level, number_level_1 = "1"),
-         level = recode(level, number_level_2 = "2"),
-         level = recode(level, number_level_3 = "3"),
-         level = recode(level, number_level_4 = "4")) %>% 
-  dplyr::select(academic_year, district, school, student_group, grade_level, level, n) %>% 
+  pivot_longer(cols = c(number_level_1, number_level_2, 
+                        number_level_3, number_level_4), 
+               names_to = "level",
+               values_to = "n",
+               names_prefix = "number_level_") %>% 
+  select(academic_year, district, school, student_group, grade_level, level, n) %>% 
   drop_na(n)
+
+school_clean
+
 ```
 
-# Part A (2)
+## #2
 
-```{r}
+```{r, message = FALSE}
 school <- school_clean %>% 
   group_by(district) %>%
   mutate(n_schools = length(unique(school))) %>% 
@@ -61,11 +67,15 @@ school <- school_clean %>%
   drop_na(hispanic_latino, white) %>% 
   arrange(district) 
 
+school
+
 ```
 
-# Part B (1)
+# Part B 
 
-```{r warning=FALSE}
+## #1
+
+```{r, warning=FALSE, message = FALSE}
 school_map <- school %>% 
   group_by(district) %>% 
   nest() %>% 
@@ -79,7 +89,8 @@ school_row <- school %>%
 school_plot <- left_join(school_map, school_row)
 ```
 
-# Part B (2)
+
+## #2
 
 ```{r}
 # not all models, unsure why
@@ -100,10 +111,11 @@ school_plot %>%
   theme_minimal()
 ```
 
-# Part B (3)
+
+## #3
 
 ```{r}
-dists <- unique(school$district)[1:10]
+dists <- unique(school$district)[1:100]
 
 school_nestby = school %>% 
   ungroup() %>% 
@@ -197,7 +209,7 @@ school_nest$nest_plot[8]
 
 ```
 
-# Part B (3): Extra Credit
+## Extra credit
 
 ```{r warning = FALSE, fig.height = 4, fig.width = 15}
 school_combine = inner_join(school_nest %>% select(-data), 
@@ -214,3 +226,23 @@ school_combine = inner_join(school_nest %>% select(-data),
 
 school_combine$combine_plot[8]
 ```
+
+## #4
+
+```{r, message = FALSE, warning = FALSE, eval = FALSE}
+fs::dir_create(here::here("midterm", "plots"))
+
+districts <- str_replace_all(tolower(school_nestby$district), " ", "-")
+
+# I'm naming each file after the official district name (could have also used "district_name")
+paths <- here::here("midterm", "plots", glue("{districts}.png"))
+
+walk2(paths, school_nestby$nestby_plot, ggsave,
+      width = 9.5, 
+      height = 6.5,
+      dpi = 500)
+
+```
+
+
+
