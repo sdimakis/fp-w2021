@@ -16,6 +16,22 @@ editor_options:
 
 # Part A
 
+## 1. Briefly name and describe the three fundamental components of a function.
+
++ `formals()` - This refers to the arguments that can be supplied to a function (e.g. `data = ` or `na.rm = TRUE`)
+\n
++ `body()` - This is the code that makes up the function. The `body()` code runs with the supplied arguments and returns some output.
+\n
++ `environment()` - This refers to where the function is saved. For example, it could be saved in your Global Environment, or it may be saved in a package. 
+
+## 2. Describe three different ways functions can be stored/applied and an example of when you might want to use each version.
+
++ If you have to repeat the same chunk of code multiple times, it could be easier to write that code into a function and save it as an object in your Global Environment. For example, if you are reading in multiple data files that all require the same data cleaning, you could write the data cleaning steps into a single function and iterate that function over the data files.
+\n
++ If you are just applying those data cleaning steps in one part of your code, you could instead write an anonymous function that gets iterated within `purrr::map*` or base `*apply` functions. In these instances, the function is not saved as an object within the Global Environment. 
+\n
++ If you have a list of functions that you want to apply over multiple iterations, you can save them into a list. For example, if you want to generate multiple plots using custom functions, you can save the custom plotting functions into a list. You can then loop through the functions to generate the plots. This can be even more powerful when you need to generate the same set of plots using multiple data files. 
+
 # Part B
 
 ## 1
