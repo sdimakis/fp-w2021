@@ -38,19 +38,21 @@ library(purrr)
 ## 1
 
 ```{r}
-mean_test <- function(x, ...) {
-  if(is.numeric(x) | any(is.na(x)) == FALSE) {
-    z <- na.omit(x)
-    sum(z)/length(z)
+mymean <- function(x){
+  if(is.numeric(x)){
+    if(any(is.na(x)) == FALSE){
+      sum(x)/length(x)
     }
-  if(is.numeric(x) | any(is.na(x)) == TRUE) {
-    warning(sum(is.na(x)), " cases of missing data were removed")
-    z <- na.omit(x)
-    sum(z)/length(z)
-  }  
-    else {
-        return()
+    else{
+      warning(sum(is.na(x)), " cases of missing data were removed")
+      z <- na.omit(x)
+      sum(z)/length(z)
     }
+  }
+  else{
+    warning("This function only accepts numeric values. Returning NA.")
+    return(NA)
+  }
 }
 
 ```
@@ -59,7 +61,7 @@ mean_test <- function(x, ...) {
 
 ```{r}
 test1 <- c(1, 3, 5, 6, 7, 3, 4, 6, NA, NA, NA)
-mean_test(test1)
+mymean(test1)
 mean(test1, na.rm = TRUE)
 
 ```
