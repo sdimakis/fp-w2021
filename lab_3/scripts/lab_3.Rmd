@@ -60,9 +60,21 @@ mymean <- function(x){
 ## 2
 
 ```{r}
+#Vector with 3 NAs has warning
 test1 <- c(1, 3, 5, 6, 7, 3, 4, 6, NA, NA, NA)
 mymean(test1)
 mean(test1, na.rm = TRUE)
+
+#Vector without NAs does not have warning
+test2 <- c(1, 3, 5, 6, 7, 3, 4, 6)
+mymean(test2)
+mean(test2, na.rm = TRUE)
+
+#Vector with a non-numeric item has warning
+test3 <- c("1", 3, 5, 6, 7, 3, 4, 6)
+mymean(test3)
+mean(test3, na.rm = TRUE)
+
 
 ```
 
@@ -128,17 +140,15 @@ num_cols(df5)
 
 summary_cols <- function(df){
   if(length(num_cols(df)) != 0){
+    mean <- map_dbl(num_cols(df), ~mean(.x, na.rm = TRUE))
+    sd <- map_dbl(num_cols(df), ~sd(.x, na.rm = TRUE))
     if(length(num_cols(df)) == length(df)){
-      mean <- map_dbl(df, ~mean(.x, na.rm = TRUE))
-      sd <- map_dbl(df, ~sd(.x, na.rm = TRUE))
       tibble(column = names(df), mean = mean, sd = sd)
     }
     else{
       num <- map_lgl(df, is.numeric)
       var <- df[!num]
       warning(paste("The variable(s)", paste(names(var), collapse=", "), "have been ommitted because they are not numeric."))
-      mean <- map_dbl(num_cols(df), ~mean(.x, na.rm = TRUE))
-      sd <- map_dbl(num_cols(df), ~sd(.x, na.rm = TRUE))
       tibble(column = names(num_cols(df)), mean = mean, sd = sd)
     }
   }
@@ -146,6 +156,7 @@ summary_cols <- function(df){
     return()
   }
 }
+
 
 # warning message when one is not numeric
 summary_cols(df1)
