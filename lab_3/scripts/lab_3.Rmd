@@ -142,14 +142,15 @@ summary_cols <- function(df){
   if(length(num_cols(df)) != 0){
     mean <- map_dbl(num_cols(df), ~mean(.x, na.rm = TRUE))
     sd <- map_dbl(num_cols(df), ~sd(.x, na.rm = TRUE))
+    table <- tibble(column = names(num_cols(df)), mean = mean, sd = sd)
     if(length(num_cols(df)) == length(df)){
-      tibble(column = names(df), mean = mean, sd = sd)
-    }
+      table
+      }
     else{
       num <- map_lgl(df, is.numeric)
       var <- df[!num]
       warning(paste("The variable(s)", paste(names(var), collapse=", "), "have been ommitted because they are not numeric."))
-      tibble(column = names(num_cols(df)), mean = mean, sd = sd)
+      table
     }
   }
   else{

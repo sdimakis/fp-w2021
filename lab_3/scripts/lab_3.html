@@ -1766,14 +1766,15 @@ df5</code></pre>
   if(length(num_cols(df)) != 0){
     mean &lt;- map_dbl(num_cols(df), ~mean(.x, na.rm = TRUE))
     sd &lt;- map_dbl(num_cols(df), ~sd(.x, na.rm = TRUE))
+    table &lt;- tibble(column = names(num_cols(df)), mean = mean, sd = sd)
     if(length(num_cols(df)) == length(df)){
-      tibble(column = names(df), mean = mean, sd = sd)
-    }
+      table
+      }
     else{
       num &lt;- map_lgl(df, is.numeric)
       var &lt;- df[!num]
       warning(paste(&quot;The variable(s)&quot;, paste(names(var), collapse=&quot;, &quot;), &quot;have been ommitted because they are not numeric.&quot;))
-      tibble(column = names(num_cols(df)), mean = mean, sd = sd)
+      table
     }
   }
   else{
